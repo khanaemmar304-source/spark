@@ -16,14 +16,16 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "frontend"))); // Serve frontend files
 
-// Root route → Login page
+// Serve static files from frontend folder
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// Root route — serve index.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
-// API route → Generate ideas
+// API route
 app.post("/generate-ideas", async (req, res) => {
   const { topic } = req.body;
 
@@ -43,41 +45,22 @@ app.post("/generate-ideas", async (req, res) => {
         messages: [
           {
             role: "user",
-            content: `Give 3 startup ideas in a JSON array for the topic: ${topic}.
-                      Each should have:
-                      {
-                        "name": "",
-                        "problem": "",
-                        "solution": "",
-                        "why": ""
-                      }`,
+            content: `Give 3 startup ideas in JSON format for topic: ${topic}.
+                      Each should include name, problem, solution, and why.`,
           },
         ],
       }),
     });
 
     const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "";
 
-    if (!data.choices || !data.choices[0]?.message?.content) {
-      throw new Error("Invalid response from OpenAI API");
-    }
-
-    let ideasText = data.choices[0].message.content.trim();
-
-    // Ensure we safely parse JSON
-    const startIdx = ideasText.indexOf("[");
-    const endIdx = ideasText.lastIndexOf("]");
-    const cleanText =
-      startIdx !== -1 && endIdx !== -1
-        ? ideasText.slice(startIdx, endIdx + 1)
-        : "[]";
-
-    let ideas = [];
+    let ideas;
     try {
-      ideas = JSON.parse(cleanText);
+      ideas = JSON.parse(text);
     } catch {
-      console.error("JSON parse failed — raw output:", ideasText);
-      return res.status(500).json({ error: "Failed to parse ideas." });
+      console.log("Could not parse ideas. Returning raw text.");
+      ideas = [{ raw: text }];
     }
 
     res.json({ ideas });
@@ -87,7 +70,7 @@ app.post("/generate-ideas", async (req, res) => {
   }
 });
 
-// Start server
+// Start the server
 app.listen(PORT, () => {
   console.log(`⚡ Spark running on port ${PORT}`);
 });
