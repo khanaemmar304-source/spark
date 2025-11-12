@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚡ Spark - Startup Idea Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top left, #1a1a2e, #000);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+    }
+    .spark-gradient {
+      background: linear-gradient(90deg, #7b2ff7, #f107a3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .idea-card {
+      transition: all 0.3s ease;
+    }
+    .idea-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+    }
+  </style>
+</head>
+
+<body class="flex flex-col items-center justify-center p-6">
+
+  <!-- LOGIN PAGE -->
+  <div id="loginSection" class="w-full max-w-md glass rounded-2xl p-6 text-center mt-20">
+    <h1 class="text-4xl font-bold mb-4 spark-gradient">⚡ Spark Login</h1>
+    <input id="email" type="email" placeholder="Email" class="w-full bg-transparent border border-gray-600 rounded-lg p-3 mb-3 text-white focus:ring-2 focus:ring-pink-500 outline-none" />
+    <input id="password" type="password" placeholder="Password" class="w-full bg-transparent border border-gray-600 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-pink-500 outline-none" />
+    <button id="loginBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">Sign In / Sign Up</button>
+    <p id="loginStatus" class="mt-3 text-sm text-gray-400"></p>
+  </div>
+
+  <!-- MAIN AI PAGE -->
+  <div id="mainSection" class="hidden flex flex-col items-center w-full">
+    <div class="w-full text-center mt-10">
+      <h1 class="text-5xl font-extrabold mb-6"><span class="spark-gradient">⚡ Spark</span> Startup Idea Generator</h1>
+    </div>
+
+    <!-- Input Section -->
+    <div class="glass w-full max-w-lg rounded-2xl p-6 mb-8">
+      <label class="block text-gray-300 font-semibold mb-2">Enter a topic or industry:</label>
+      <input
+        id="topicInput"
+        type="text"
+        placeholder="e.g. sustainable fashion, AI healthcare..."
+        class="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none mb-4"
+      />
+      <button
+        id="generateBtn"
+        class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition"
+      >
+        Generate Ideas
+      </button>
+      <button
+        id="logoutBtn"
+        class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2 rounded-lg mt-3"
+      >
+        Logout
+      </button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="hidden flex items-center space-x-3 text-pink-400 font-medium">
+      <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      <span>Generating startup ideas...</span>
+    </div>
+
+    <!-- Ideas Container -->
+    <div id="ideasContainer" class="grid md:grid-cols-3 gap-6 w-full max-w-6xl mt-10"></div>
+  </div>
+
+  <script>
+    // Initialize Supabase
+    const SUPABASE_URL = "https://dqssjmxviqhbhporsvse.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxc3NqbXh2aXFoYmhwb3JzdnNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MTk1NzMsImV4cCI6MjA3ODE5NTU3M30.dHfs-wnNaqcSAar4ALjNDDuMOB0P1dn1kiW29N-xMr4";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const loginSection = document.getElementById("loginSection");
+    const mainSection = document.getElementById("mainSection");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginStatus = document.getElementById("loginStatus");
+
+    // Check session
+    async function checkSession() {
+      const { data } = await client.auth.getSession();
+      if (data.session) showMain();
+    }
+    checkSession();
+
+    // Login or Sign-up
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (!email || !password) {
+        loginStatus.textContent = "❌ Please fill in both fields.";
+        return;
+      }
+
+      loginStatus.textContent = "⏳ Signing in...";
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        if (error.message.includes("Invalid login")) {
+          const { error: signUpErr } = await client.auth.signUp({ email, password });
+          if (signUpErr) loginStatus.textContent = "❌ " + signUpErr.message;
+          else loginStatus.textContent = "✅ Account created! Check your email.";
+        } else loginStatus.textContent = "❌ " + error.message;
+      } else {
+        showMain();
+      }
+    });
+
+    // Logout
+    document.getElementById("logoutBtn").onclick = async () => {
+      await client.auth.signOut();
+      loginSection.classList.remove("hidden");
+      mainSection.classList.add("hidden");
+    };
+
+    function showMain() {
+      loginSection.classList.add("hidden");
+      mainSection.classList.remove("hidden");
+    }
+
+    // ---- AI Idea Generator ----
+    const generateBtn = document.getElementById("generateBtn");
+    const topicInput = document.getElementById("topicInput");
+    const ideasContainer = document.getElementById("ideasContainer");
+    const loading = document.getElementById("loading");
+
+    generateBtn.addEventListener("click", async () => {
+      const topic = topicInput.value.trim();
+      if (!topic) return alert("Please enter a topic first.");
+
+      ideasContainer.innerHTML = "";
+      loading.classList.remove("hidden");
+
+      try {
+        const response = await fetch("http://localhost:3000/generate-ideas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ topic }),
+        });
+
+        const data = await response.json();
+        loading.classList.add("hidden");
+
+        if (!data.ideas || data.ideas.length === 0) {
+          ideasContainer.innerHTML = `<p class="text-gray-400 text-center">No ideas found. Try again!</p>`;
+          return;
+        }
+
+        ideasContainer.innerHTML = data.ideas
+          .map(
+            (idea, i) => `
+          <div class="idea-card glass rounded-2xl p-6 border border-gray-700">
+            <h2 class="text-xl font-bold text-pink-400 mb-3">💡 Idea ${i + 1}: ${idea.name}</h2>
+            <p class="text-gray-300 mb-2"><strong>🧩 Problem:</strong> ${idea.problem}</p>
+            <p class="text-gray-300 mb-2"><strong>🚀 Solution:</strong> ${idea.solution}</p>
+            <p class="text-gray-300"><strong>💰 Why it works:</strong> ${idea.why}</p>
+          </div>
+        `
+          )
+          .join("");
+      } catch (err) {
+        loading.classList.add("hidden");
+        ideasContainer.innerHTML = `<p class="text-red-500 text-center">❌ Error generating ideas.</p>`;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
