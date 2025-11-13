@@ -1,76 +1,62 @@
 import express from "express";
-import bodyParser from "body-parser";
-import fetch from "node-fetch";
+import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
+import OpenAI from "openai";
 
 dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(cors());
+app.use(express.json());
 
-// Fix __dirname for ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Middleware
-app.use(bodyParser.json());
-
-// Serve static files from frontend folder
-app.use(express.static(path.join(__dirname, "frontend")));
-
-// Root route — serve index.html
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "index.html"));
-});
-
-// API route
 app.post("/generate-ideas", async (req, res) => {
   const { topic } = req.body;
-
-  if (!topic) {
-    return res.status(400).json({ error: "Topic is required" });
-  }
-
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "user",
-            content: `Give 3 startup ideas in JSON format for topic: ${topic}.
-                      Each should include name, problem, solution, and why.`,
-          },
-        ],
-      }),
+    const prompt = `
+You are Spark AI, a professional startup idea generator.
+
+Generate 3 unique startup ideas for the industry/topic: "${topic}".
+Output MUST be valid JSON in the following format ONLY:
+
+{
+  "ideas": [
+    {
+      "name": "Idea Name",
+      "problem": "Describe the problem",
+      "solution": "Describe the solution",
+      "why": "Why it will work"
+    },
+    ...
+  ]
+}
+Do not include anything else outside JSON.
+`;
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
     });
 
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || "";
+    const rawText = completion.choices[0].message.content;
 
-    let ideas;
+    // Make sure it's valid JSON
+    let parsed;
     try {
-      ideas = JSON.parse(text);
-    } catch {
-      console.log("Could not parse ideas. Returning raw text.");
-      ideas = [{ raw: text }];
+      parsed = JSON.parse(rawText);
+    } catch (e) {
+      console.error("Failed to parse GPT output:", rawText);
+      return res.status(500).json({ error: "Failed to parse GPT output." });
     }
 
-    res.json({ ideas });
-  } catch (error) {
-    console.error("Error generating ideas:", error);
-    res.status(500).json({ error: "Failed to generate ideas" });
+    res.json(parsed);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error generating ideas." });
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`⚡ Spark running on port ${PORT}`);
-});
+app.listen(process.env.PORT || 3000, () =>
+  console.log("⚡ Spark backend running on port", process.env.PORT || 3000)
+);
