@@ -1,148 +1,125 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚡ Spark - Startup Idea Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      background: radial-gradient(circle at top left, #1a1a2e, #000);
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(12px);
-    }
-    .spark-gradient {
-      background: linear-gradient(90deg, #7b2ff7, #f107a3);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .idea-card {
-      transition: all 0.3s ease;
-    }
-    .idea-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
-    }
-  </style>
-</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-[#0a0a0a] text-white font-[Inter]">
 
-<body class="flex flex-col items-center justify-center p-6">
-
-  <!-- 🌟 NAVBAR -->
+  <!-- Navbar -->
   <nav class="fixed top-0 left-0 w-full flex justify-between items-center px-8 py-4 bg-black/40 backdrop-blur-lg border-b border-gray-800 z-50">
     <h1 class="text-2xl font-bold spark-gradient">⚡ Spark</h1>
     <div class="space-x-6">
-      <button id="aboutBtn" class="text-gray-300 hover:text-white">About</button>
-      <button id="loginNavBtn" class="text-gray-300 hover:text-white">Login</button>
-      <button id="logoutNavBtn" class="hidden text-gray-300 hover:text-white">Logout</button>
+      <button id="aboutBtn" class="text-gray-300 hover:text-pink-400">About</button>
+      <button id="logoutBtnNav" class="text-gray-300 hover:text-pink-400 hidden">Logout</button>
     </div>
   </nav>
 
-  <!-- 🏠 LANDING PAGE -->
-  <div id="landingPage" class="flex flex-col items-center justify-center text-center mt-40">
-    <h1 class="text-6xl md:text-7xl font-extrabold spark-gradient animate-pulse">⚡ Spark</h1>
-    <p class="text-gray-300 mt-6 text-lg md:text-xl max-w-2xl">
-      Turn your ideas into reality. Generate startup ideas, get AI-powered critiques, and validate your next big move.
-    </p>
-    <div class="mt-8 flex space-x-4">
-      <button id="goToLogin" class="bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 px-6 rounded-lg">Login</button>
-      <button id="goToSignup" class="border border-pink-500 hover:bg-pink-500/20 text-pink-400 font-bold py-3 px-6 rounded-lg">Sign Up</button>
-    </div>
-  </div>
-
-  <!-- 🔐 LOGIN PAGE -->
-  <div id="loginSection" class="hidden w-full max-w-md glass rounded-2xl p-6 text-center mt-20">
+  <!-- LOGIN PAGE -->
+  <div id="loginSection" class="w-full max-w-md glass rounded-2xl p-6 text-center mt-32">
     <h1 class="text-4xl font-bold mb-4 spark-gradient">⚡ Spark Login</h1>
-    <input id="email" type="email" placeholder="Email" class="w-full bg-transparent border border-gray-600 rounded-lg p-3 mb-3 text-white focus:ring-2 focus:ring-pink-500 outline-none" />
-    <input id="password" type="password" placeholder="Password" class="w-full bg-transparent border border-gray-600 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-pink-500 outline-none" />
-    <button id="loginBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">Sign In / Sign Up</button>
+    <input id="email" type="email" placeholder="Email"
+      class="w-full bg-transparent border border-gray-600 rounded-lg p-3 mb-3 text-white focus:ring-2 focus:ring-pink-500 outline-none" />
+    <input id="password" type="password" placeholder="Password"
+      class="w-full bg-transparent border border-gray-600 rounded-lg p-3 mb-4 text-white focus:ring-2 focus:ring-pink-500 outline-none" />
+    <button id="loginBtn"
+      class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">
+      Sign In / Sign Up
+    </button>
     <p id="loginStatus" class="mt-3 text-sm text-gray-400"></p>
   </div>
 
-  <!-- ⚙️ MAIN DASHBOARD -->
-  <div id="mainSection" class="hidden flex flex-col items-center w-full mt-24">
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden flex w-full max-w-7xl mt-24">
+    <!-- Sidebar -->
+    <aside class="w-64 glass rounded-2xl p-6 h-[80vh] flex flex-col space-y-6 sticky top-24">
+      <h2 class="text-xl font-semibold mb-3 text-pink-400">Features</h2>
+      <ol class="space-y-3 text-gray-300 font-medium">
+        <li>
+          <button id="navGenerate"
+            class="w-full text-left py-2 px-3 rounded-lg hover:bg-pink-600/20 transition">⚡ Generate Ideas</button>
+        </li>
+        <li>
+          <button id="navRank"
+            class="w-full text-left py-2 px-3 rounded-lg hover:bg-pink-600/20 transition">🧠 Analyze My Idea</button>
+        </li>
+      </ol>
+    </aside>
 
-    <!-- Navbar for features -->
-    <div class="flex space-x-6 mb-6">
-      <button id="ideaGenTab" class="px-4 py-2 rounded-lg bg-pink-600 font-semibold">Generate Ideas</button>
-      <button id="rankIdeaTab" class="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600">Rank My Idea</button>
-    </div>
+    <!-- Main Content -->
+    <main class="flex-1 ml-8">
+      <!-- Generate Ideas Section -->
+      <div id="mainSection" class="block">
+        <h1 class="text-5xl font-extrabold mb-6 spark-gradient">⚡ Spark Startup Idea Generator</h1>
+        <div class="glass w-full max-w-lg rounded-2xl p-6 mb-8">
+          <label class="block text-gray-300 font-semibold mb-2">Enter a topic or industry:</label>
+          <input id="topicInput" type="text" placeholder="e.g. sustainable fashion, AI healthcare..."
+            class="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none mb-4" />
+          <button id="generateBtn"
+            class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">
+            Generate Ideas
+          </button>
+        </div>
 
-    <!-- Idea Generator -->
-    <div id="ideaGenSection" class="w-full flex flex-col items-center">
-      <h1 class="text-4xl font-extrabold mb-6"><span class="spark-gradient">💡 Startup Idea Generator</span></h1>
+        <div id="loading" class="hidden flex items-center space-x-3 text-pink-400 font-medium">
+          <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+          </svg>
+          <span>Generating startup ideas...</span>
+        </div>
 
-      <div class="glass w-full max-w-lg rounded-2xl p-6 mb-8">
-        <input id="topicInput" type="text" placeholder="e.g. sustainable fashion, AI healthcare..." class="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none mb-4" />
-        <button id="generateBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">Generate Ideas</button>
+        <div id="ideasContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mt-10"></div>
       </div>
 
-      <div id="loading" class="hidden flex items-center space-x-3 text-pink-400 font-medium">
-        <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
-        <span>Generating startup ideas...</span>
+      <!-- Rank Idea Section -->
+      <div id="rankSection" class="hidden">
+        <h2 class="text-4xl font-extrabold mb-6 text-pink-400">🧠 Analyze My Idea</h2>
+        <div class="glass w-full max-w-lg rounded-2xl p-6 mb-8">
+          <label class="block text-gray-300 font-semibold mb-2">Describe your startup idea:</label>
+          <textarea id="ideaInput" placeholder="Explain your startup idea..."
+            class="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none mb-4 h-32"></textarea>
+          <button id="rankBtn"
+            class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">
+            Rank My Idea
+          </button>
+        </div>
+
+        <div id="rankResult" class="glass w-full max-w-lg rounded-2xl p-6 text-gray-300 hidden">
+          <h3 class="text-2xl font-bold text-pink-400 mb-3">🧩 Evaluation</h3>
+          <p id="rating" class="text-lg font-semibold"></p>
+          <p id="market" class="mb-3"></p>
+          <div>
+            <h4 class="font-semibold text-green-400">✅ Pros</h4>
+            <ul id="pros" class="list-disc ml-6 mb-3"></ul>
+            <h4 class="font-semibold text-red-400">⚠️ Cons</h4>
+            <ul id="cons" class="list-disc ml-6"></ul>
+          </div>
+        </div>
       </div>
-
-      <div id="ideasContainer" class="grid md:grid-cols-3 gap-6 w-full max-w-6xl mt-10"></div>
-    </div>
-
-    <!-- 🧩 Rank My Idea Section -->
-    <div id="rankIdeaSection" class="hidden w-full flex flex-col items-center">
-      <h1 class="text-4xl font-extrabold mb-6"><span class="spark-gradient">📊 Rank My Idea</span></h1>
-      <div class="glass w-full max-w-lg rounded-2xl p-6 mb-8">
-        <textarea id="userIdea" rows="5" placeholder="Describe your startup idea here..." class="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none mb-4"></textarea>
-        <button id="rankBtn" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:opacity-90 text-white font-bold py-3 rounded-lg transition">Analyze My Idea</button>
-      </div>
-      <div id="rankResult" class="w-full max-w-3xl text-gray-300"></div>
-    </div>
-
+    </main>
   </div>
 
   <script>
-    // Initialize Supabase
     const SUPABASE_URL = "https://dqssjmxviqhbhporsvse.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxc3NqbXh2aXFoYmhwb3JzdnNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MTk1NzMsImV4cCI6MjA3ODE5NTU3M30.dHfs-wnNaqcSAar4ALjNDDuMOB0P1dn1kiW29N-xMr4";
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const landingPage = document.getElementById("landingPage");
     const loginSection = document.getElementById("loginSection");
+    const dashboard = document.getElementById("dashboard");
     const mainSection = document.getElementById("mainSection");
+    const rankSection = document.getElementById("rankSection");
     const loginBtn = document.getElementById("loginBtn");
     const loginStatus = document.getElementById("loginStatus");
-    const loginNavBtn = document.getElementById("loginNavBtn");
-    const logoutNavBtn = document.getElementById("logoutNavBtn");
-
-    document.getElementById("goToLogin").onclick = () => { landingPage.classList.add("hidden"); loginSection.classList.remove("hidden"); };
-    document.getElementById("goToSignup").onclick = () => { landingPage.classList.add("hidden"); loginSection.classList.remove("hidden"); };
-    loginNavBtn.onclick = () => { landingPage.classList.add("hidden"); loginSection.classList.remove("hidden"); };
-
-    logoutNavBtn.onclick = async () => {
-      await client.auth.signOut();
-      mainSection.classList.add("hidden");
-      landingPage.classList.remove("hidden");
-      logoutNavBtn.classList.add("hidden");
-      loginNavBtn.classList.remove("hidden");
-    };
+    const logoutBtnNav = document.getElementById("logoutBtnNav");
+    const navGenerate = document.getElementById("navGenerate");
+    const navRank = document.getElementById("navRank");
 
     async function checkSession() {
       const { data } = await client.auth.getSession();
-      if (data.session) showMain();
+      if (data.session) showDashboard();
     }
     checkSession();
 
     loginBtn.addEventListener("click", async () => {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
-      if (!email || !password) {
-        loginStatus.textContent = "❌ Please fill in both fields.";
-        return;
-      }
+      if (!email || !password) return loginStatus.textContent = "❌ Please fill in both fields.";
+
       loginStatus.textContent = "⏳ Signing in...";
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) {
@@ -151,30 +128,33 @@
           if (signUpErr) loginStatus.textContent = "❌ " + signUpErr.message;
           else loginStatus.textContent = "✅ Account created! Check your email.";
         } else loginStatus.textContent = "❌ " + error.message;
-      } else showMain();
+      } else showDashboard();
     });
 
-    function showMain() {
-      landingPage.classList.add("hidden");
+    logoutBtnNav.onclick = async () => {
+      await client.auth.signOut();
+      dashboard.classList.add("hidden");
+      loginSection.classList.remove("hidden");
+      logoutBtnNav.classList.add("hidden");
+    };
+
+    function showDashboard() {
       loginSection.classList.add("hidden");
-      mainSection.classList.remove("hidden");
-      logoutNavBtn.classList.remove("hidden");
-      loginNavBtn.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      logoutBtnNav.classList.remove("hidden");
     }
 
-    // Switch between sections
-    const ideaGenSection = document.getElementById("ideaGenSection");
-    const rankIdeaSection = document.getElementById("rankIdeaSection");
-    document.getElementById("ideaGenTab").onclick = () => {
-      ideaGenSection.classList.remove("hidden");
-      rankIdeaSection.classList.add("hidden");
+    // Navigation buttons
+    navGenerate.onclick = () => {
+      mainSection.classList.remove("hidden");
+      rankSection.classList.add("hidden");
     };
-    document.getElementById("rankIdeaTab").onclick = () => {
-      ideaGenSection.classList.add("hidden");
-      rankIdeaSection.classList.remove("hidden");
+    navRank.onclick = () => {
+      mainSection.classList.add("hidden");
+      rankSection.classList.remove("hidden");
     };
 
-    // ---- Generate Ideas ----
+    // Generate Ideas
     const generateBtn = document.getElementById("generateBtn");
     const topicInput = document.getElementById("topicInput");
     const ideasContainer = document.getElementById("ideasContainer");
@@ -183,58 +163,64 @@
     generateBtn.addEventListener("click", async () => {
       const topic = topicInput.value.trim();
       if (!topic) return alert("Please enter a topic first.");
+
       ideasContainer.innerHTML = "";
       loading.classList.remove("hidden");
+
       try {
-        const response = await fetch('https://spark-x4pk.onrender.com/generate-ideas', {
-          method: "POST", headers: { "Content-Type": "application/json" },
+        const response = await fetch("https://spark-x4pk.onrender.com/generate-ideas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ topic }),
         });
         const data = await response.json();
         loading.classList.add("hidden");
-        if (!data.ideas) {
-          ideasContainer.innerHTML = `<p class="text-gray-400 text-center">No ideas found. Try again!</p>`;
-          return;
-        }
+
+        if (!data.ideas) return ideasContainer.innerHTML = `<p class='text-gray-400 text-center'>No ideas found. Try again!</p>`;
+
         ideasContainer.innerHTML = data.ideas.map((idea, i) => `
-          <div class="idea-card glass rounded-2xl p-6 border border-gray-700">
+          <div class="idea-card glass rounded-2xl p-6 border border-gray-700 hover:shadow-lg hover:translate-y-[-4px] transition">
             <h2 class="text-xl font-bold text-pink-400 mb-3">💡 Idea ${i + 1}: ${idea.name}</h2>
             <p class="text-gray-300 mb-2"><strong>🧩 Problem:</strong> ${idea.problem}</p>
             <p class="text-gray-300 mb-2"><strong>🚀 Solution:</strong> ${idea.solution}</p>
             <p class="text-gray-300"><strong>💰 Why it works:</strong> ${idea.why}</p>
-          </div>`).join("");
-      } catch (err) {
+          </div>
+        `).join("");
+      } catch {
         loading.classList.add("hidden");
         ideasContainer.innerHTML = `<p class="text-red-500 text-center">❌ Error generating ideas.</p>`;
       }
     });
 
-    // ---- Rank My Idea ----
+    // Rank Idea
     const rankBtn = document.getElementById("rankBtn");
-    const userIdea = document.getElementById("userIdea");
     const rankResult = document.getElementById("rankResult");
 
     rankBtn.addEventListener("click", async () => {
-      const idea = userIdea.value.trim();
+      const idea = document.getElementById("ideaInput").value.trim();
       if (!idea) return alert("Please describe your idea first.");
-      rankResult.innerHTML = "⏳ Analyzing your idea...";
+
+      rankResult.classList.add("hidden");
+      rankBtn.textContent = "⏳ Evaluating...";
       try {
-        const res = await fetch("https://spark-x4pk.onrender.com/rank-idea", {
-          method: "POST", headers: { "Content-Type": "application/json" },
+        const response = await fetch("https://spark-x4pk.onrender.com/rank-idea", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idea }),
         });
-        const data = await res.json();
-        rankResult.innerHTML = `
-          <div class="glass p-6 rounded-2xl">
-            <h2 class="text-pink-400 text-2xl font-bold mb-3">🔥 Rating: ${data.rating}/10</h2>
-            <p><strong>✅ Pros:</strong> ${data.pros}</p>
-            <p><strong>⚠️ Cons:</strong> ${data.cons}</p>
-            <p><strong>📈 Market Potential:</strong> ${data.market}</p>
-          </div>`;
-      } catch (e) {
-        rankResult.innerHTML = "❌ Failed to analyze idea.";
+        const data = await response.json();
+        rankBtn.textContent = "Rank My Idea";
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById("rating").innerHTML = `⭐ Rating: ${data.rating}`;
+        document.getElementById("market").innerHTML = `🌍 Market: ${data.market}`;
+        document.getElementById("pros").innerHTML = data.pros.map(p => `<li>${p}</li>`).join("");
+        document.getElementById("cons").innerHTML = data.cons.map(c => `<li>${c}</li>`).join("");
+        rankResult.classList.remove("hidden");
+      } catch {
+        rankBtn.textContent = "Rank My Idea";
+        alert("❌ Failed to rank idea.");
       }
     });
   </script>
 </body>
-</html>
